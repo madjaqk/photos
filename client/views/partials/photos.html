@@ -1,0 +1,29 @@
+<style type="text/css">
+	.pic{
+		display: inline-block;
+		margin: 5px;
+		padding: 2px;
+	}
+
+	.pic img{
+		height: 100px;
+		width: 100px;
+	}
+</style>
+
+<a href="#" ng-click="logout()">Log out</a>
+<h1>Hello, {{ curr_user.name }}!</h1>
+
+<div ng-repeat="photo in photos | filter:picture_filter | orderBy:'-_likers.length' | limitTo:10" class="pic">
+	<img src="{{ photo.photo_url }}">
+	<p><a href="" ng-click="subject_filter(photo.subject)">{{ photo.subject }}</a></p>
+	<p><i>From <a href="" ng-click="uploader_filter(photo._uploader)">{{ photo._uploader.name }}</a></i></p>
+	<input type="checkbox" ng-model="like_pics[photo._id]" ng-checked="photo._likers.indexOf(curr_user._id) > -1" ng-click="update_likes(photo._id, like_pics[photo._id])">
+	{{photo._likers.length}} like<span ng-if="photo._likers.length != 1">s</span>!
+</div>
+<p><button ng-show="picture_filter.subject || picture_filter._uploader" ng-click="show_all()">Show all</button></p>
+
+<p>Share a photo!</p>
+<p>URL: <input type="text" ng-model="new_pic.photo_url"></p>
+<p>Subject: <input type="text" ng-model="new_pic.subject"></p>
+<button ng-click="share_pic()">Share it!</button>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title></title>
+		<script src="angular/angular.js"></script>
+		<script src="angular-route/angular-route.js"></script>
+		<script src="ngstorage/ngStorage.js"></script>
+		<script type="text/javascript">
+			var myApp = angular.module("myApp", ["ngRoute", "ngStorage"])
+
+			myApp.config(function($routeProvider){
+				$routeProvider
+					.when("/", {
+						templateUrl: "partials/login.html",
+						controller: "user_loginController"
+					})
+					.when("/photos", {
+						templateUrl: "partials/photos.html",
+						controller: "photosController"
+					})
+					.otherwise({
+						redirectTo: "/"
+					})
+			})
+
+			myApp.factory("userFactory", function($http){
+				var factory = {}
+
+				factory.create = function(name, callback){
+					$http.post("/users", {name: name})
+						.then(function(output){
+							var user = output
+							callback(user)
+						})
+				}
+
+				return factory
+			})
+
+			myApp.factory("photoFactory", function($http){
+				var factory = {}
+
+				factory.index = function(callback){
+					console.log("photoFactory index")
+					$http.get("/photos")
+						.then(function(data){
+						var photos = data.data
+						callback(photos)
+					})
+				}
+
+				factory.create = function(new_pic, callback){
+					$http.post("/photos", new_pic)
+						.then(function(data){
+						callback(data)
+					})
+				}
+
+				factory.update_likes = function(photo_id, user_id, like_bool, callback){
+					if(like_bool){
+						$http.post("/add_like", {photo_id: photo_id, user_id: user_id})
+							.then(function(data){
+								callback(data)
+							})
+					} else {
+						$http.post("/remove_like", {photo_id: photo_id, user_id: user_id})
+							.then(function(data){
+								callback(data)
+							})
+					}
+				}
+
+				return factory
+			})
+
+			myApp.controller("user_loginController", function($scope, $sessionStorage, $location, userFactory){
+				
+				if($sessionStorage.user){
+					$location.url("/photos")
+				}
+
+				$scope.login = function(){
+					if(!$scope.curr_user) {
+						alert("Enter your name, chap!")
+						return
+					}
+					
+					userFactory.create($scope.curr_user.name, function(data){
+						if(data.data.name=="ValidationError"){
+							//error handling
+							alert(data.data.message)
+						} else {
+							$sessionStorage.user = data.data
+							$location.url("/photos")
+						}
+					})
+				}
+			})
+
+			myApp.controller("photosController", function($scope, $sessionStorage, $location, photoFactory){
+
+				function show_photos(){
+					console.log("Show photos")
+					photoFactory.index(function(data){
+						$scope.photos = data
+					})
+				}
+
+				if($sessionStorage.user){
+					$scope.curr_user = $sessionStorage.user
+				} else {
+					$location.url("/")
+				}
+
+				$scope.new_pic = {}
+				$scope.picture_filter = {}
+
+				show_photos()
+
+				$scope.logout = function(){
+					delete $sessionStorage.user
+					$location.url("/")
+				}
+
+				$scope.share_pic = function(){
+					$scope.new_pic._uploader = $scope.curr_user._id
+					// console.log($scope.new_pic)
+					
+					photoFactory.create($scope.new_pic, function(data){
+						show_photos()
+					})
+
+					$scope.new_pic = {}
+				}
+
+				$scope.update_likes = function(photo_id, like_bool){
+					console.log(photo_id)
+					console.log(like_bool)
+					photoFactory.update_likes(photo_id, $scope.curr_user._id, like_bool, function(data){
+						show_photos()
+					})
+				}
+
+				$scope.subject_filter = function(subject){
+					$scope.picture_filter.subject = subject
+				}
+
+				$scope.uploader_filter = function(uploader){
+					$scope.picture_filter._uploader = uploader
+				}
+
+				$scope.show_all = function(subject){
+					$scope.picture_filter = {}
+				}
+			})
+
+			
+		</script>
+	</head>
+	<body ng-app="myApp">
+		<div ng-view="">
+		</div>
+	</body>
+</html>
