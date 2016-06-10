@@ -23,6 +23,42 @@
 					})
 			})
 
+			// File upload directive and service from Jenny Louthan
+			// https://uncorkedstudios.com/blog/multipartformdata-file-upload-with-angularjs
+
+			myApp.directive("fileModel", ["$parse", function($parse){
+				return {
+					restrict: "A",
+					link: function(scope, element, attrs){
+						var model = $parse(attrs.fileModel)
+						var modelSetter = model.assign
+
+						element.bind("change", function(){
+							scope.$apply(function(){
+								modelSetter(scope, element[0].files[0])
+							})
+						})
+					}
+				}
+			}])
+
+			myApp.service("fileUpload", ["$http", function($http){
+				this.uploadFileToUrl = function(file, data, uploadUrl, callback){
+					var fd = new FormData();
+					fd.append("file", file)
+					for(var key in data){
+						fd.append(key, data[key])
+					}
+					$http.post(uploadUrl, fd, {
+						transformRequest: angular.identity,
+						headers: {'Content-Type': undefined}
+					})
+					.then(function(){
+						callback()
+					})
+				}
+			}])
+
 			myApp.factory("userFactory", function($http){
 				var factory = {}
 
@@ -37,7 +73,7 @@
 				return factory
 			})
 
-			myApp.factory("photoFactory", function($http){
+			myApp.factory("photoFactory", function($http, fileUpload){
 				var factory = {}
 
 				factory.index = function(callback){
@@ -46,6 +82,12 @@
 						.then(function(data){
 						var photos = data.data
 						callback(photos)
+					})
+				}
+
+				factory.upload = function(file, data, callback){
+					fileUpload.uploadFileToUrl(file, data, "/upload", function(){
+						callback()
 					})
 				}
 
@@ -126,7 +168,14 @@
 					$scope.new_pic._uploader = $scope.curr_user._id
 					// console.log($scope.new_pic)
 					
-					photoFactory.create($scope.new_pic, function(data){
+					// photoFactory.create($scope.new_pic, function(data){
+					// 	show_photos()
+					// })
+
+					console.dir($scope.upload_picture)
+					console.log($scope.new_pic)
+
+					photoFactory.upload($scope.upload_picture, $scope.new_pic, function(){
 						show_photos()
 					})
 

@@ -10,7 +10,6 @@ var PhotoSchema = new mongoose.Schema(
 		},
 		subject: {
 			type: String,
-			required: true,
 		},
 		_uploader: {
 			type: mongoose.Schema.Types.ObjectId,

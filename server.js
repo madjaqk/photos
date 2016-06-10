@@ -1,5 +1,7 @@
 var express = require("express");
 var path = require("path");
+var multer = require("multer")
+var upload = multer({ dest: "/client/static/"})
 
 var app = express();
 
@@ -7,6 +9,8 @@ var bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded())
 app.use(bodyParser.json())
 app.use(express.static(path.join(__dirname, "/client/views")))
+// app.use(express.static(path.join(__dirname, "/client/static")))
+app.use(express.static(__dirname))
 app.use(express.static(__dirname + "/node_modules"))
 
 require("./server/config/mongoose.js")

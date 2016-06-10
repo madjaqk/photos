@@ -18,10 +18,28 @@ module.exports = (function(){
 
 		create: function(req, res){
 			// console.log(req.body)
+			// console.log(req.body)
+			// console.log(req.file)
 			pic = new Photo(req.body)
 			pic.save(function(err){
 				if(err){
 					console.log("photo save error", err)
+					res.json(err)
+				} else {
+					res.json({"status": "OK"})
+				}
+			})
+		},
+
+		upload: function(req, res){
+			// req.file should be file, req.body text fields
+			pic = new Photo(req.body)
+			console.log(req.file)
+			console.log(req.file.path)
+			pic.photo_url = req.file.path
+			pic.save(function(err){
+				if(err){
+					console.log("photo upload error", err)
 					res.json(err)
 				} else {
 					res.json({"status": "OK"})

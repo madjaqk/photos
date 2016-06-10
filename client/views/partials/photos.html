@@ -3,6 +3,7 @@
 		display: inline-block;
 		margin: 5px;
 		padding: 2px;
+		vertical-align: top;
 	}
 
 	.pic img{
@@ -14,7 +15,8 @@
 <a href="#" ng-click="logout()">Log out</a>
 <h1>Hello, {{ curr_user.name }}!</h1>
 
-<div ng-repeat="photo in photos | filter:picture_filter | orderBy:'-_likers.length' | limitTo:10" class="pic">
+Add this back to ng-repeat: " | limitTo:10"
+<div ng-repeat="photo in photos | filter:picture_filter | orderBy:'-_likers.length' " class="pic">
 	<img src="{{ photo.photo_url }}">
 	<p><a href="" ng-click="subject_filter(photo.subject)">{{ photo.subject }}</a></p>
 	<p><i>From <a href="" ng-click="uploader_filter(photo._uploader)">{{ photo._uploader.name }}</a></i></p>
@@ -25,5 +27,8 @@
 
 <p>Share a photo!</p>
 <p>URL: <input type="text" ng-model="new_pic.photo_url"></p>
+<p><input type="file" file-model="upload_picture" accept="image/*"></p>
 <p>Subject: <input type="text" ng-model="new_pic.subject"></p>
 <button ng-click="share_pic()">Share it!</button>
+
+{{ upload_picture }}
